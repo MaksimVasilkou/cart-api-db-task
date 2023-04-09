@@ -27,16 +27,4 @@ export class AppController {
       },
     };
   }
-
-  @UseGuards(BasicAuthGuard)
-  @Get('api/profile')
-  async getProfile(@Request() req) {
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'OK',
-      data: {
-        user: req.user,
-      },
-    };
-  }
 }

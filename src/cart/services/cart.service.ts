@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { v4 } from 'uuid';
+import { poolQuery } from '../../database/index'
 
 import { Cart } from '../models';
 
@@ -8,8 +9,13 @@ import { Cart } from '../models';
 export class CartService {
   private userCarts: Record<string, Cart> = {};
 
-  findByUserId(userId: string): Cart {
-    return this.userCarts[ userId ];
+  async findByUserId(userId: string): Promise<Cart> {
+    const cart = await poolQuery('SELECT * FROM carts JOIN cart_items ON cart_items.cart_id = carts.id where user_id = $1', [userId]);
+    if (cart.rows?.[0]) {
+      return cart.rows?.[0]
+    }
+
+    return null
   }
 
   createByUserId(userId: string) {
@@ -24,8 +30,8 @@ export class CartService {
     return userCart;
   }
 
-  findOrCreateByUserId(userId: string): Cart {
-    const userCart = this.findByUserId(userId);
+  async findOrCreateByUserId(userId: string): Promise<Cart> {
+    const userCart = await this.findByUserId(userId);
 
     if (userCart) {
       return userCart;
@@ -34,8 +40,8 @@ export class CartService {
     return this.createByUserId(userId);
   }
 
-  updateByUserId(userId: string, { items }: Cart): Cart {
-    const { id, ...rest } = this.findOrCreateByUserId(userId);
+  async updateByUserId(userId: string, { items }: Cart): Promise<Cart> {
+    const { id, ...rest } = await this.findOrCreateByUserId(userId);
 
     const updatedCart = {
       id,

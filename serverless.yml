@@ -1,0 +1,22 @@
+service: cart-service-db-integration
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-1
+  environment:
+
+functions:
+  requestHandler:
+    handler: dist/main.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
